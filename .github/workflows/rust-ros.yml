@@ -26,7 +26,8 @@ env:
 jobs:
   build:
 
-    runs-on: osrf/ros2:foxy
+    runs-on: ubuntu-latest
+    container: osrf/ros2:foxy
 
     steps:
     - name: Install APT pre-requisites
