@@ -35,7 +35,9 @@ jobs:
     
     - name: Install ros-foxy-cyclonedds
       run: |
-        sudo apt install ros-foxy-cyclonedds
+        sudo apt install -q ros-foxy-cyclonedds
+        export CYCLONE_INCLUDE=/opt/ros/foxy/include
+        export CYCLONE_LIB=/opt/ros/foxy/lib/x86_64-linux-gnu
 
     - name: Install CycloCut
       run: |
