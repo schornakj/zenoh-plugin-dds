@@ -1,0 +1,86 @@
+#
+# Copyright (c) 2017, 2020 ADLINK Technology Inc.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License 2.0 which is available at
+# http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+# which is available at https://www.apache.org/licenses/LICENSE-2.0.
+#
+# SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+#
+# Contributors:
+#   ADLINK zenoh team, <zenoh@adlink-labs.tech>
+#   Joe Schornak, <joe.schornak@gmail.com>
+#
+name: Rust
+
+on:
+  push:
+    # branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: osrf/ros2:foxy
+
+    steps:
+    - name: Install APT pre-requisites
+      run: sudo apt-get update && sudo apt-get -y install curl gnupg2 lsb-release
+    
+    - name: Install ros-foxy-cyclonedds
+      run: |
+        sudo apt install ros-foxy-cyclonedds
+
+    - name: Install CycloCut
+      run: |
+        mkdir -p ${{runner.workspace}}/work
+        cd ${{runner.workspace}}/work
+        git clone https://github.com/kydos/cyclocut.git
+        cd cyclocut
+        mkdir -p build
+        cd build
+        cmake ..
+        sudo cmake --build . --target install
+
+    - name: Install latest nightly
+      uses: actions-rs/toolchain@v1
+      with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+
+    - uses: actions/checkout@v2
+
+    - name: Run cargo check
+      uses: actions-rs/cargo@v1
+      with:
+        command: check
+
+    - name: Build
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --verbose --all-targets
+
+    - name: Clippy
+      uses: actions-rs/cargo@v1
+      with:
+        command: clippy
+        args: --all --examples
+
+    - name: Run tests
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --verbose
+
+    - name: Run rustfmt
+      uses: actions-rs/cargo@v1
+      with:
+        command: fmt
+        args: -- --check
